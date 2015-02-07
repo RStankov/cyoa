@@ -13,6 +13,8 @@ RUN mkdir -p /go/bin
 RUN mkdir -p /go/pkg
 RUN mkdir -p /go/src
 
+RUN go get github.com/pilu/fresh
+
 ADD . $APPPATH
 
 WORKDIR $APPPATH
