@@ -1,0 +1,7 @@
+web:
+  build: .
+  volumes:
+    - /go/src/github.com/rstankov/choose_your_own_adventure
+  ports:
+    - "8080:8080"
+  command: go run main.go
