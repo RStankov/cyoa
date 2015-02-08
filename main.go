@@ -3,11 +3,11 @@ package main
 import (
   "html/template"
   "log"
-  "fmt"
   "net/http"
   "os"
   "path"
   "time"
+  "encoding/json"
 )
 
 type Middleware struct {
@@ -29,8 +29,11 @@ func (m Middleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
   log.Printf("[%s] %q %v\n", r.Method, r.URL.String(), t2.Sub(t1))
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
-  fmt.Fprintf(w, "path - %s", r.URL.Path[1:])
+type Book struct {
+  Id          string  `json:"id"`
+  Title       string  `json:"title"`
+  Description string  `json:"description"`
+  Color       string  `json:"color"`
 }
 
 func main() {
@@ -38,11 +41,17 @@ func main() {
 
   http.Handle("/static/", withMiddleware(http.StripPrefix("/static/", fs)))
   http.Handle("/", withMiddlewareFunc(serveTemplate))
-  http.Handle("/api/", withMiddlewareFunc(handler))
-
+  http.Handle("/api/", withMiddlewareFunc(serveApi))
 
   log.Println("Listening on 8080...")
   http.ListenAndServe(":8080", nil)
+}
+
+func serveApi(w http.ResponseWriter, r *http.Request) {
+  book := Book{"1", "Dark river", "The story of ...", "blue"}
+  books := []Book{book}
+
+  json.NewEncoder(w).Encode(books)
 }
 
 func serveTemplate(w http.ResponseWriter, r *http.Request) {
