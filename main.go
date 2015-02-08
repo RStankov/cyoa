@@ -6,28 +6,10 @@ import (
   "net/http"
   "os"
   "path"
-  "time"
   "encoding/json"
+  "github.com/rstankov/cyoa/middleware"
 )
 
-type Middleware struct {
-  Next http.Handler
-}
-
-func withMiddleware(handler http.Handler) Middleware {
-  return Middleware{handler}
-}
-
-func withMiddlewareFunc(fn http.HandlerFunc) Middleware {
-  return withMiddleware(http.HandlerFunc(fn))
-}
-
-func (m Middleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-  t1 := time.Now()
-  m.Next.ServeHTTP(w, r)
-  t2 := time.Now()
-  log.Printf("[%s] %q %v\n", r.Method, r.URL.String(), t2.Sub(t1))
-}
 
 type Book struct {
   Id          string  `json:"id"`
@@ -39,9 +21,9 @@ type Book struct {
 func main() {
   fs := http.FileServer(http.Dir("static"))
 
-  http.Handle("/static/", withMiddleware(http.StripPrefix("/static/", fs)))
-  http.Handle("/", withMiddlewareFunc(serveTemplate))
-  http.Handle("/api/", withMiddlewareFunc(serveApi))
+  http.Handle("/static/", middleware.NewWithHandler(http.StripPrefix("/static/", fs)))
+  http.Handle("/", middleware.NewWithHandlerFunc(serveTemplate))
+  http.Handle("/api/", middleware.NewWithHandlerFunc(serveApi))
 
   log.Println("Listening on 8080...")
   http.ListenAndServe(":8080", nil)
