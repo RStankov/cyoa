@@ -11,33 +11,45 @@ import (
 
 type FileServer struct {
   FileHandler http.Handler
+  RootPath string
+  LayoutPath string
 }
 
-func New() http.Handler {
-  fs := http.FileServer(http.Dir("static"))
-  handler := http.StripPrefix("/static/", fs)
+const staticPath string = "static"
+const templatesPath string = "templates"
 
-  return FileServer{handler}
+func New(rootPath string) http.Handler {
+  if !strings.HasSuffix(rootPath, "/") {
+    rootPath += "/"
+  }
+
+  fs := http.FileServer(http.Dir(staticPath))
+  handler := http.StripPrefix(rootPath + staticPath + "/", fs)
+  layoutPath := path.Join(templatesPath, "layout.html")
+
+  return FileServer{handler, rootPath, layoutPath}
 }
 
 func (s FileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-  if strings.HasPrefix(r.URL.Path, "static") {
-    s.ServeHTTP(w, r)
+  if strings.HasPrefix(r.URL.Path, s.RootPath + "/" + staticPath) {
+    s.FileHandler.ServeHTTP(w, r)
   } else {
-    serveTemplate(w, r)
+    s.serveTemplate(w, r)
   }
 }
 
-func serveTemplate(w http.ResponseWriter, r *http.Request) {
-  filePath := r.URL.Path
+func (s FileServer) templatePath(url string) string {
+  url = strings.Replace(url, s.RootPath, "", 1)
 
-  if filePath == "/" {
-    filePath = "index"
+  if url == "" {
+    url = "index"
   }
-  filePath = filePath + ".html"
 
-  lp := path.Join("templates", "layout.html")
-  fp := path.Join("templates", filePath)
+  return path.Join(templatesPath, url + ".html")
+}
+
+func (s FileServer) serveTemplate(w http.ResponseWriter, r *http.Request) {
+  fp := s.templatePath(r.URL.Path)
 
   // Return a 404 if the template doesn't exist
   info, err := os.Stat(fp)
@@ -54,7 +66,7 @@ func serveTemplate(w http.ResponseWriter, r *http.Request) {
     return
   }
 
-  tmpl, err := template.ParseFiles(lp, fp)
+  tmpl, err := template.ParseFiles(s.LayoutPath, fp)
   if err != nil {
     // Log the detailed error
     log.Println(err.Error())

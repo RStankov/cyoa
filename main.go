@@ -17,7 +17,7 @@ type Book struct {
 }
 
 func main() {
-  http.Handle("/", middleware.NewWithHandler(miniserver.New()))
+  http.Handle("/", middleware.NewWithHandler(miniserver.New("/")))
   http.Handle("/api/", middleware.NewWithHandlerFunc(serveApi))
 
   log.Println("Listening on 8080...")
