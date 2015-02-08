@@ -1,11 +1,11 @@
 Choose Your Own Adventure
 =========================
 
-This is just code exercise. Where I want to just try out several new technologies and code techniques. Basically just a tech demo.
+This is just technology playground project, where I want to try several new things. Some of them are completely new for me, some I want to check from different perspective.
 
 ## Scope
 
-A [Gamebook](http://en.wikipedia.org/wiki/Gamebook) web application. Consisting from two parts admin builder for the books and frontend for playing the books.
+[Choose Your Own Adventure](http://en.wikipedia.org/wiki/Gamebook) web application. Consisting from two parts admin web builder for the books and frontend for playing the books.
 
 ## Technologies used:
 
