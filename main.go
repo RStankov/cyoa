@@ -1,6 +1,7 @@
 package main
 
 import (
+    "log"
     "fmt"
     "net/http"
 )
@@ -11,8 +12,11 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-    fmt.Println("Server running at port 8080")
+    fs := http.FileServer(http.Dir("static"))
 
-    http.HandleFunc("/", handler)
+    log.Println("Listening on 8080...")
+
+    http.Handle("/", fs)
+    http.HandleFunc("/api/", handler)
     http.ListenAndServe(":8080", nil)
 }
