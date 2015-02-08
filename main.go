@@ -7,19 +7,38 @@ import (
   "net/http"
   "os"
   "path"
+  "time"
 )
+
+type Middleware struct {
+  Next http.Handler
+}
+
+func withMiddleware(handler http.Handler) Middleware {
+  return Middleware{handler}
+}
+
+func withMiddlewareFunc(fn http.HandlerFunc) Middleware {
+  return withMiddleware(http.HandlerFunc(fn))
+}
+
+func (m Middleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+  t1 := time.Now()
+  m.Next.ServeHTTP(w, r)
+  t2 := time.Now()
+  log.Printf("[%s] %q %v\n", r.Method, r.URL.String(), t2.Sub(t1))
+}
 
 func handler(w http.ResponseWriter, r *http.Request) {
   fmt.Fprintf(w, "path - %s", r.URL.Path[1:])
-  fmt.Printf("GET %s\n", r.URL.Path)
 }
 
 func main() {
   fs := http.FileServer(http.Dir("static"))
 
-  http.Handle("/static/", http.StripPrefix("/static/", fs))
-  http.HandleFunc("/", serveTemplate)
-  http.HandleFunc("/api/", handler)
+  http.Handle("/static/", withMiddleware(http.StripPrefix("/static/", fs)))
+  http.Handle("/", withMiddlewareFunc(serveTemplate))
+  http.Handle("/api/", withMiddlewareFunc(handler))
 
 
   log.Println("Listening on 8080...")
