@@ -43,7 +43,7 @@ func New(rootPath string) http.Handler {
 func (s Api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
   w.Header().Set("Content-Type", "application/json")
 
-  if r.Method == "POST" && r.URL.String() == "/api/books" {
+  if r.Method == "POST" && r.URL.Path == "/api/books" {
     r.ParseForm()
 
     book := Book{0, r.FormValue("title"), r.FormValue("description"), r.FormValue("color")}
@@ -74,7 +74,7 @@ func (s Api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
     json.NewEncoder(w).Encode(book)
 
-  } else if r.Method == "GET" && r.URL.String() == "/api/books" {
+  } else if r.Method == "GET" && r.URL.Path == "/api/books" {
     db, err := sql.Open("neo4j-cypher", "http://192.168.59.103:7474")
     if err != nil {
       log.Fatal(err)
