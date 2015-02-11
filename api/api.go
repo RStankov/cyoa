@@ -4,7 +4,6 @@ import(
   "net/http"
   "encoding/json"
   "database/sql"
-
   "log"
   _ "gopkg.in/cq.v1"
 )
@@ -37,30 +36,34 @@ func New(rootPath string) http.Handler {
 }
 
 func (s Api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-  book := Book{0, "Dark river", "The story of ...", "blue"}
+  if r.Method == "POST" && r.URL.String() == "/api/books" {
+    book := Book{0, "Dark river", "The story of ...", "blue"}
 
-  db, err := sql.Open("neo4j-cypher", "http://192.168.59.103:7474")
-  if err != nil {
-    log.Fatal(err)
+    db, err := sql.Open("neo4j-cypher", "http://192.168.59.103:7474")
+    if err != nil {
+      log.Fatal(err)
+    }
+    defer db.Close()
+
+    stmt, err := db.Prepare("CREATE (record:Book {title:{0}, description: {1}, color: {2}}) RETURN id(record)")
+    if err != nil {
+      log.Fatal(err)
+    }
+
+    rows, err := stmt.Query(book.Title, book.Description, book.Color)
+    if err != nil {
+      log.Fatal(err)
+    }
+    defer rows.Close()
+
+    rows.Next()
+    err = rows.Scan(&book.Id)
+    if err != nil {
+      log.Fatal(err)
+    }
+
+    json.NewEncoder(w).Encode(book)
+  } else {
+    json.NewEncoder(w).Encode("Not found")
   }
-  defer db.Close()
-
-  stmt, err := db.Prepare("CREATE (record:Book {title:{0}, description: {1}, color: {2}}) RETURN id(record)")
-  if err != nil {
-    log.Fatal(err)
-  }
-
-  rows, err := stmt.Query(book.Title, book.Description, book.Color)
-  if err != nil {
-    log.Fatal(err)
-  }
-  defer rows.Close()
-
-  rows.Next()
-  err = rows.Scan(&book.Id)
-  if err != nil {
-    log.Fatal(err)
-  }
-
-  json.NewEncoder(w).Encode(book)
 }
