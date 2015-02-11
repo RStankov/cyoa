@@ -41,6 +41,8 @@ func New(rootPath string) http.Handler {
 }
 
 func (s Api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+  w.Header().Set("Content-Type", "application/json")
+
   if r.Method == "POST" && r.URL.String() == "/api/books" {
     r.ParseForm()
 
