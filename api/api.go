@@ -3,10 +3,14 @@ package api
 import(
   "net/http"
   "encoding/json"
+  "database/sql"
+
+  "log"
+  _ "gopkg.in/cq.v1"
 )
 
 type Book struct {
-  Id          string  `json:"id"`
+  Id          int     `json:"id"`
   Title       string  `json:"title"`
   Description string  `json:"description"`
   Color       string  `json:"color"`
@@ -33,8 +37,30 @@ func New(rootPath string) http.Handler {
 }
 
 func (s Api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-  book := Book{"1", "Dark river", "The story of ...", "blue"}
-  books := []Book{book}
+  book := Book{0, "Dark river", "The story of ...", "blue"}
 
-  json.NewEncoder(w).Encode(books)
+  db, err := sql.Open("neo4j-cypher", "http://192.168.59.103:7474")
+  if err != nil {
+    log.Fatal(err)
+  }
+  defer db.Close()
+
+  stmt, err := db.Prepare("CREATE (record:Book {title:{0}, description: {1}, color: {2}}) RETURN id(record)")
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  rows, err := stmt.Query(book.Title, book.Description, book.Color)
+  if err != nil {
+    log.Fatal(err)
+  }
+  defer rows.Close()
+
+  rows.Next()
+  err = rows.Scan(&book.Id)
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  json.NewEncoder(w).Encode(book)
 }
