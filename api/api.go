@@ -5,6 +5,7 @@ import(
   "encoding/json"
   "database/sql"
   "log"
+  "strconv"
   _ "gopkg.in/cq.v1"
 )
 
@@ -75,6 +76,8 @@ func (s Api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     json.NewEncoder(w).Encode(book)
 
   } else if r.Method == "GET" && r.URL.Path == "/api/books" {
+    limit := extractLimit(r.URL.Query()["limit"], 50)
+
     db, err := sql.Open("neo4j-cypher", "http://192.168.59.103:7474")
     if err != nil {
       log.Fatal(err)
@@ -86,7 +89,7 @@ func (s Api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
       log.Fatal(err)
     }
 
-    rows, err := stmt.Query(25)
+    rows, err := stmt.Query(limit)
     if err != nil {
       log.Fatal(err)
     }
@@ -113,4 +116,18 @@ func (s Api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     w.WriteHeader(404)
     json.NewEncoder(w).Encode(ApiError{404, "Not Found"})
   }
+}
+
+func extractLimit(limitQuery []string, maxLimit int) int {
+  if len(limitQuery) == 0 {
+    return maxLimit
+  }
+
+  limit, err := strconv.Atoi(limitQuery[0])
+
+  if err != nil {
+    return maxLimit
+  }
+
+  return limit
 }
