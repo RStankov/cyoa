@@ -42,7 +42,9 @@ func New(rootPath string) http.Handler {
 
 func (s Api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
   if r.Method == "POST" && r.URL.String() == "/api/books" {
-    book := Book{0, "Dark river", "The story of ...", "blue"}
+    r.ParseForm()
+
+    book := Book{0, r.FormValue("title"), r.FormValue("description"), r.FormValue("color")}
 
     db, err := sql.Open("neo4j-cypher", "http://192.168.59.103:7474")
     if err != nil {
@@ -62,6 +64,7 @@ func (s Api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     defer rows.Close()
 
     rows.Next()
+
     err = rows.Scan(&book.Id)
     if err != nil {
       log.Fatal(err)

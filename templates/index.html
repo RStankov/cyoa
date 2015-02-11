@@ -1,5 +1,12 @@
 {{define "title"}}Title{{end}}
 
 {{define "body"}}
-<h1>Hi</h1>
+<h1>Create book</h1>
+
+<form action="/api/books" method="POST">
+  <p><label>Title:* <input type="text" name="title" /></label></p>
+  <p><label>Description:* <input type="text" name="description" /></label></p>
+  <p><label>Color:* <input type="text" name="color" /></label></p>
+  <input type="submit" value="Create" />
+</form>
 {{end}}
