@@ -27,6 +27,11 @@ type Choice struct {
   NextPageId int      `json:"nextPageId"`
 }
 
+type ApiError struct {
+  Code        int     `json:id`
+  Description string  `json:description`
+}
+
 type Api struct {
   RootPath string
 }
@@ -64,6 +69,7 @@ func (s Api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
     json.NewEncoder(w).Encode(book)
   } else {
-    json.NewEncoder(w).Encode("Not found")
+    w.WriteHeader(404)
+    json.NewEncoder(w).Encode(ApiError{404, "Not Found"})
   }
 }
