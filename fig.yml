@@ -5,3 +5,8 @@ web:
   ports:
     - "8080:8080"
   command: fresh
+
+neo4j:
+  image: tpires/neo4j
+  ports:
+    - "7474:7474"
