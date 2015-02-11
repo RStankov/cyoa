@@ -12,6 +12,18 @@ type Book struct {
   Color       string  `json:"color"`
 }
 
+type Page struct {
+  Id        int       `json:"id"`
+  Text      string    `json:"text"`
+  Choices   []Choice  `json:"choices"`
+}
+
+type Choice struct {
+  Id         int      `json:"id"`
+  Text       string   `json:"text"`
+  NextPageId int      `json:"nextPageId"`
+}
+
 type Api struct {
   RootPath string
 }
