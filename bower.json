@@ -16,5 +16,6 @@
   ],
   "dependencies": {
     "react": "~0.12.2"
+    "reqwest": "~1.1.5"
   }
 }
