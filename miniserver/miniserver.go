@@ -31,7 +31,7 @@ func New(rootPath string) http.Handler {
 }
 
 func (s FileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-  if strings.HasPrefix(r.URL.Path, s.RootPath + "/" + staticPath) {
+  if strings.HasPrefix(r.URL.Path, s.RootPath + staticPath) {
     s.FileHandler.ServeHTTP(w, r)
   } else {
     s.serveTemplate(w, r)
