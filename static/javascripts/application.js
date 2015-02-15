@@ -36,7 +36,43 @@ var BookCreateForm = React.createClass({
   }
 });
 
+var BookListing = React.createClass({
+  getInitialState: function() {
+    return {data: []};
+  },
+
+  componentDidMount: function() {
+    request({
+      url: '/api/books',
+      type: 'json',
+      success: function(data) {
+        this.setState({data: data});
+      }.bind(this),
+    })
+  },
+
+  render: function() {
+    var bookNodes = this.state.data.map(function (book) {
+      return (
+        <article>
+          <h1>{book.title}</h1>
+          <p>{book.description}</p>
+        </article>
+      );
+    });
+    return (
+      <div>
+      <h1>Book Listing</h1>
+      {bookNodes}
+      </div>
+    );
+  }
+});
+
 React.render(
-  <BookCreateForm />,
+  <div>
+    <BookListing />
+    <BookCreateForm />
+  </div>,
   document.getElementById('main')
 );
