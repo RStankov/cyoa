@@ -16,6 +16,10 @@ This is just technology playground project, where I want to try several new thin
 * [bower](http://bower.io/)
 * [React](http://facebook.github.io/react/)
 
+## Installation
+
+__TODO__
+
 ## License
 
 **[MIT License](https://github.com/RStankov/SearchObject/blob/master/LICENSE.txt)**
