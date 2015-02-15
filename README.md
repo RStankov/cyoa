@@ -13,6 +13,7 @@ This is just technology playground project, where I want to try several new thin
 * [fig](http://www.fig.sh/)
 * [go](https://golang.org/)
 * [neo4j](neo4j.com)
+* [bower](http://bower.io/)
 * [React](http://facebook.github.io/react/)
 
 ## License
