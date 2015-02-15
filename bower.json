@@ -10,8 +10,11 @@
   "ignore": [
     "**/.*",
     "node_modules",
-    "bower_components",
     "test",
-    "tests"
-  ]
+    "tests",
+    "static/bower_components/"
+  ],
+  "dependencies": {
+    "react": "~0.12.2"
+  }
 }
