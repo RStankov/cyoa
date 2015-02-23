@@ -11,20 +11,20 @@ import(
 )
 
 type Book struct {
-  Id          int     `json:"id"`
+  Id          int64   `json:"id"`
   Title       string  `json:"title"`
   Description string  `json:"description"`
   Color       string  `json:"color"`
 }
 
 type Page struct {
-  Id        int       `json:"id"`
+  Id        int64     `json:"id"`
   Text      string    `json:"text"`
   Choices   []Choice  `json:"choices"`
 }
 
 type Choice struct {
-  Id         int      `json:"id"`
+  Id         int64    `json:"id"`
   Text       string   `json:"text"`
   NextPageId int      `json:"nextPageId"`
 }
@@ -63,18 +63,17 @@ func (s Api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
       log.Fatal(err)
     }
 
-    rows, err := stmt.Query(book.Title, book.Description, book.Color)
+    result, err := stmt.Exec(book.Title, book.Description, book.Color)
     if err != nil {
       log.Fatal(err)
     }
-    defer rows.Close()
 
-    rows.Next()
-
-    err = rows.Scan(&book.Id)
+    id, err := result.LastInsertId()
     if err != nil {
       log.Fatal(err)
     }
+
+    book.Id = id
 
     json.NewEncoder(w).Encode(book)
   } else if r.Method == "GET" && r.URL.Path == "/api/books" {
@@ -158,11 +157,10 @@ func (s Api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
       log.Fatal(err)
     }
 
-    rows, err := stmt.Query(id)
+    _, err = stmt.Exec(id)
     if err != nil {
       log.Fatal(err)
     }
-    defer rows.Close()
 
     w.WriteHeader(204)
   } else {
