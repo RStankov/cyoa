@@ -8,15 +8,18 @@ var BookCreateForm = React.createClass({
     var description = this.refs.description.getDOMNode().value.trim();
     var color       = this.refs.color.getDOMNode().value.trim();
 
+
+    var self = this;
     request({
       url: '/api/books',
       type: 'json',
       method: 'post',
       data: {title: title, description: description, color: color},
       success: function (book) {
-        // TODO notify storage
+        self.props.onBookSubmit(book);
       }
     })
+
 
     this.refs.title.getDOMNode().value = '';
     this.refs.description.getDOMNode().value = '';
@@ -37,6 +40,24 @@ var BookCreateForm = React.createClass({
 });
 
 var BookListing = React.createClass({
+  render: function() {
+    var bookNodes = this.props.data.map(function (book) {
+      return (
+        <article>
+          <h1>{book.title}</h1>
+          <p>{book.description}</p>
+        </article>
+      );
+    });
+    return (
+      <div>
+        {bookNodes}
+      </div>
+    );
+  }
+});
+
+var BookIndex = React.createClass({
   getInitialState: function() {
     return {data: []};
   },
@@ -51,28 +72,23 @@ var BookListing = React.createClass({
     })
   },
 
+  handleBookSubmit: function(book) {
+    var updatedData = this.state.data.concat([book]);
+    this.setState({data: updatedData});
+  },
+
   render: function() {
-    var bookNodes = this.state.data.map(function (book) {
-      return (
-        <article>
-          <h1>{book.title}</h1>
-          <p>{book.description}</p>
-        </article>
-      );
-    });
     return (
       <div>
-      <h1>Book Listing</h1>
-      {bookNodes}
+        <h1>Book Listing</h1>
+        <BookListing data={this.state.data} />
+        <BookCreateForm onBookSubmit={this.handleBookSubmit} />
       </div>
     );
   }
 });
 
 React.render(
-  <div>
-    <BookListing />
-    <BookCreateForm />
-  </div>,
+  <BookIndex />,
   document.getElementById('main')
 );
