@@ -6,6 +6,7 @@ import(
   "database/sql"
   "log"
   "strconv"
+  "regexp"
   _ "gopkg.in/cq.v1"
 )
 
@@ -44,6 +45,8 @@ func New(rootPath string) http.Handler {
 func (s Api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
   w.Header().Set("Content-Type", "application/json")
 
+  bookReg, _ := regexp.Compile("^/api/books/([0-9]+)$")
+
   if r.Method == "POST" && r.URL.Path == "/api/books" {
     r.ParseForm()
 
@@ -74,7 +77,6 @@ func (s Api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     }
 
     json.NewEncoder(w).Encode(book)
-
   } else if r.Method == "GET" && r.URL.Path == "/api/books" {
     limit := extractLimit(r.URL.Query()["limit"], 50)
 
@@ -112,6 +114,40 @@ func (s Api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     }
 
     json.NewEncoder(w).Encode(books)
+  } else if r.Method == "GET" && bookReg.MatchString(r.URL.Path) {
+    id, _ := strconv.Atoi(bookReg.FindStringSubmatch(r.URL.Path)[1])
+
+    db, err := sql.Open("neo4j-cypher", "http://192.168.59.103:7474")
+    if err != nil {
+      log.Fatal(err)
+    }
+    defer db.Close()
+
+    stmt, err := db.Prepare("MATCH (r:Book) WHERE id(r) = {0} RETURN id(r), r.title, r.description, r.color")
+    if err != nil {
+      log.Fatal(err)
+    }
+
+    rows, err := stmt.Query(id)
+    if err != nil {
+      log.Fatal(err)
+    }
+    defer rows.Close()
+
+    rows.Next()
+
+    title := ""
+    description := ""
+    color := ""
+
+    err = rows.Scan(&id, &title, &description, &color)
+    if err != nil {
+      log.Fatal(err)
+    }
+
+    book := Book{id, title, description, color}
+
+    json.NewEncoder(w).Encode(book)
   } else {
     w.WriteHeader(404)
     json.NewEncoder(w).Encode(ApiError{404, "Not Found"})
