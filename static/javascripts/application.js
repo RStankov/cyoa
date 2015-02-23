@@ -79,6 +79,12 @@ var BookIndex = React.createClass({
     var data = this.state.data;
     _.remove(data, book);
     this.setState({data: data});
+
+    request({
+      url:    '/api/books/' + book.id,
+      type:   'json',
+      method: 'delete'
+    });
   },
 
   render: function() {
