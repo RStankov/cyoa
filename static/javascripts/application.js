@@ -8,18 +8,7 @@ var BookCreateForm = React.createClass({
     var description = this.refs.description.getDOMNode().value.trim();
     var color       = this.refs.color.getDOMNode().value.trim();
 
-
-    var self = this;
-    request({
-      url: '/api/books',
-      type: 'json',
-      method: 'post',
-      data: {title: title, description: description, color: color},
-      success: function (book) {
-        self.props.onBookSubmit(book);
-      }
-    })
-
+    this.props.onBookSubmit({title: title, description: description, color: color});
 
     this.refs.title.getDOMNode().value = '';
     this.refs.description.getDOMNode().value = '';
@@ -73,8 +62,17 @@ var BookIndex = React.createClass({
   },
 
   handleBookSubmit: function(book) {
-    var updatedData = this.state.data.concat([book]);
-    this.setState({data: updatedData});
+    var self = this;
+    request({
+      url:    '/api/books',
+      type:   'json',
+      method: 'post',
+      data:    book,
+      success: function (book) {
+        var updatedData = self.state.data.concat([book]);
+        self.setState({data: updatedData});
+      }
+    });
   },
 
   render: function() {
