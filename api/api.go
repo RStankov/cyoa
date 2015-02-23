@@ -148,6 +148,27 @@ func (s Api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     book := Book{id, title, description, color}
 
     json.NewEncoder(w).Encode(book)
+  } else if r.Method == "DELETE" && bookReg.MatchString(r.URL.Path) {
+    id, _ := strconv.Atoi(bookReg.FindStringSubmatch(r.URL.Path)[1])
+
+    db, err := sql.Open("neo4j-cypher", "http://192.168.59.103:7474")
+    if err != nil {
+      log.Fatal(err)
+    }
+    defer db.Close()
+
+    stmt, err := db.Prepare("MATCH (r:Book) WHERE id(r) = {0} DELETE r")
+    if err != nil {
+      log.Fatal(err)
+    }
+
+    rows, err := stmt.Query(id)
+    if err != nil {
+      log.Fatal(err)
+    }
+    defer rows.Close()
+
+    w.WriteHeader(204)
   } else {
     w.WriteHeader(404)
     json.NewEncoder(w).Encode(ApiError{404, "Not Found"})
