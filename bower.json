@@ -15,7 +15,8 @@
     "static/bower_components/"
   ],
   "dependencies": {
-    "react": "~0.12.2"
-    "reqwest": "~1.1.5"
+    "react": "~0.12.2",
+    "reqwest": "~1.1.5",
+    "lodash": "3.3.0"
   }
 }

@@ -28,20 +28,20 @@ var BookCreateForm = React.createClass({
   }
 });
 
-var BookListing = React.createClass({
+var BookItem = React.createClass({
+  handleRemoval: function() {
+    if (!confirm('Are you sure?')) { return; }
+
+    this.props.onBookRemoval(this.props.book);
+  },
+
   render: function() {
-    var bookNodes = this.props.data.map(function (book) {
-      return (
-        <article>
-          <h1>{book.title}</h1>
-          <p>{book.description}</p>
-        </article>
-      );
-    });
     return (
-      <div>
-        {bookNodes}
-      </div>
+      <article>
+        <h1>{this.props.book.title}</h1>
+        <p>{this.props.book.description}</p>
+        <button onClick={this.handleRemoval}>delete</button>
+      </article>
     );
   }
 });
@@ -69,17 +69,27 @@ var BookIndex = React.createClass({
       method: 'post',
       data:    book,
       success: function (book) {
-        var updatedData = self.state.data.concat([book]);
-        self.setState({data: updatedData});
+        var data = self.state.data.concat([book]);
+        self.setState({data: data});
       }
     });
   },
 
+  handlBookRemoval: function(book) {
+    var data = this.state.data;
+    _.remove(data, book);
+    this.setState({data: data});
+  },
+
   render: function() {
+    var bookNodes = this.state.data.map(function (book) {
+      return <BookItem book={book} onBookRemoval={this.handlBookRemoval} />;
+    }, this);
+
     return (
       <div>
         <h1>Book Listing</h1>
-        <BookListing data={this.state.data} />
+        {bookNodes}
         <BookCreateForm onBookSubmit={this.handleBookSubmit} />
       </div>
     );
