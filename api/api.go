@@ -128,13 +128,7 @@ func (s Api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
       log.Fatal(err)
     }
 
-    rows, err := stmt.Query(id)
-    if err != nil {
-      log.Fatal(err)
-    }
-    defer rows.Close()
-
-    rows.Next()
+    rows := stmt.QueryRow(id)
 
     title := ""
     description := ""
@@ -142,7 +136,9 @@ func (s Api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
     err = rows.Scan(&id, &title, &description, &color)
     if err != nil {
-      log.Fatal(err)
+      w.WriteHeader(404)
+      json.NewEncoder(w).Encode(ApiError{404, "Not Found"})
+      return
     }
 
     book := Book{id, title, description, color}
